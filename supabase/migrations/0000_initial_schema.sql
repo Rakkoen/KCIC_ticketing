@@ -34,9 +34,14 @@ returns trigger
 language plpgsql
 security definer set search_path = public
 as $$
+declare
+    user_role text;
 begin
+  -- Get role from user_metadata, default to 'employee' if not specified
+  user_role := COALESCE(new.raw_user_meta_data->>'role', 'employee');
+  
   insert into public.users (id, email, full_name, role)
-  values (new.id, new.email, new.raw_user_meta_data->>'full_name', 'employee');
+  values (new.id, new.email, new.raw_user_meta_data->>'full_name', user_role);
   return new;
 end;
 $$;

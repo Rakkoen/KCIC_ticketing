@@ -41,8 +41,9 @@ export function StatusSelect({ ticketId, currentStatus }: StatusSelectProps) {
     }
 
     const statusVariants: Record<string, string> = {
-        new: 'info',
+        open: 'info',
         in_progress: 'warning',
+        on_escalation: 'destructive',
         resolved: 'success',
         closed: 'secondary'
     }
@@ -59,8 +60,9 @@ export function StatusSelect({ ticketId, currentStatus }: StatusSelectProps) {
                     onChange={handleStatusChange}
                     className="appearance-none bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 text-zinc-900 dark:text-white text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5 pr-8 disabled:opacity-50"
                 >
-                    <option value="new">New</option>
+                    <option value="open">Open</option>
                     <option value="in_progress">In Progress</option>
+                    <option value="on_escalation">On Escalation</option>
                     <option value="resolved">Resolved</option>
                     <option value="closed">Closed</option>
                 </select>
