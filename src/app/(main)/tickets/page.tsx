@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { TicketCard } from '@/components/tickets/ticket-card'
 import { TicketFilters, TicketFilters as TicketFiltersType } from '@/components/tickets/ticket-filters'
@@ -29,13 +29,7 @@ export default function TicketsPage() {
     const [totalCount, setTotalCount] = useState(0)
     const supabase = createClient()
 
-    useEffect(() => {
-        if (viewMode !== 'kanban') {
-            fetchTickets()
-        }
-    }, [filters, currentPage, viewMode])
-
-    const fetchTickets = async () => {
+    const fetchTickets = useCallback(async () => {
         setLoading(true)
         try {
             // First get the total count with filters
@@ -110,12 +104,18 @@ export default function TicketsPage() {
         } finally {
             setLoading(false)
         }
-    }
+    }, [filters, currentPage, supabase])
 
-    const handleFiltersChange = (newFilters: TicketFiltersType) => {
+    useEffect(() => {
+        if (viewMode !== 'kanban') {
+            fetchTickets()
+        }
+    }, [fetchTickets, viewMode])
+
+    const handleFiltersChange = useCallback((newFilters: TicketFiltersType) => {
         setFilters(newFilters)
         setCurrentPage(1) // Reset to first page when filters change
-    }
+    }, [])
 
     const generatePDF = async () => {
         setExporting(true)

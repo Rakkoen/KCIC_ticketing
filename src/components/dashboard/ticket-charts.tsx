@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useMemo, memo } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import {
     BarChart,
@@ -31,18 +31,16 @@ const COLORS = {
     gray: '#6B7280'
 }
 
-export function TicketCharts({ timeRange = '7d' }: TicketChartsProps) {
+// Optimization: Memoize the component
+export const TicketCharts = memo(function TicketCharts({ timeRange = '7d' }: TicketChartsProps) {
     const [statusData, setStatusData] = useState<any[]>([])
     const [priorityData, setPriorityData] = useState<any[]>([])
     const [trendData, setTrendData] = useState<any[]>([])
     const [loading, setLoading] = useState(true)
     const supabase = createClient()
 
-    useEffect(() => {
-        fetchChartData()
-    }, [timeRange])
-
-    const fetchChartData = async () => {
+    // Optimization: useCallback for fetch function
+    const fetchChartData = useCallback(async () => {
         setLoading(true)
         try {
             // Calculate date range
@@ -51,19 +49,19 @@ export function TicketCharts({ timeRange = '7d' }: TicketChartsProps) {
             const startDate = new Date(now.getTime() - (days * 24 * 60 * 60 * 1000))
 
             // Fetch status distribution
-            const { data: statusData, error: statusError } = await supabase
+            const { data: statusDataRaw, error: statusError } = await supabase
                 .from('tickets')
                 .select('status')
                 .gte('created_at', startDate.toISOString())
 
             // Fetch priority distribution
-            const { data: priorityData, error: priorityError } = await supabase
+            const { data: priorityDataRaw, error: priorityError } = await supabase
                 .from('tickets')
                 .select('priority')
                 .gte('created_at', startDate.toISOString())
 
             // Fetch trend data (daily ticket creation)
-            const { data: trendData, error: trendError } = await supabase
+            const { data: trendDataRaw, error: trendError } = await supabase
                 .from('tickets')
                 .select('created_at')
                 .gte('created_at', startDate.toISOString())
@@ -74,7 +72,7 @@ export function TicketCharts({ timeRange = '7d' }: TicketChartsProps) {
             }
 
             // Process status data
-            const statusCounts = statusData?.reduce((acc: any, ticket) => {
+            const statusCounts = statusDataRaw?.reduce((acc: any, ticket: any) => {
                 const status = ticket.status.replace('_', ' ')
                 acc[status] = (acc[status] || 0) + 1
                 return acc
@@ -86,7 +84,7 @@ export function TicketCharts({ timeRange = '7d' }: TicketChartsProps) {
             }))
 
             // Process priority data
-            const priorityCounts = priorityData?.reduce((acc: any, ticket) => {
+            const priorityCounts = priorityDataRaw?.reduce((acc: any, ticket: any) => {
                 acc[ticket.priority] = (acc[ticket.priority] || 0) + 1
                 return acc
             }, {}) || {}
@@ -97,7 +95,7 @@ export function TicketCharts({ timeRange = '7d' }: TicketChartsProps) {
             }))
 
             // Process trend data
-            const dailyCounts = trendData?.reduce((acc: any, ticket) => {
+            const dailyCounts = trendDataRaw?.reduce((acc: any, ticket: any) => {
                 const date = new Date(ticket.created_at).toLocaleDateString()
                 acc[date] = (acc[date] || 0) + 1
                 return acc
@@ -118,7 +116,43 @@ export function TicketCharts({ timeRange = '7d' }: TicketChartsProps) {
         } finally {
             setLoading(false)
         }
-    }
+    }, [timeRange, supabase])
+
+    useEffect(() => {
+        fetchChartData()
+    }, [fetchChartData])
+
+    // Optimization: Memoize render content for PieChart to prevent unnecessary re-computations 
+    // although Recharts handles its own updates, keeping data stable helps.
+    const renderPieChart = useMemo(() => (
+        <ResponsiveContainer width="100%" height={300}>
+            <PieChart>
+                <Pie
+                    data={statusData}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({ name, percent }) => `${name} ${(percent ? percent * 100 : 0).toFixed(0)}%`}
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
+                >
+                    {statusData.map((entry, index) => (
+                        <Cell
+                            key={`cell-${index}`}
+                            fill={
+                                entry.name === 'New' ? COLORS.blue :
+                                    entry.name === 'In progress' ? COLORS.yellow :
+                                        entry.name === 'Resolved' ? COLORS.green :
+                                            COLORS.gray
+                            }
+                        />
+                    ))}
+                </Pie>
+                <Tooltip />
+            </PieChart>
+        </ResponsiveContainer>
+    ), [statusData]) // Only re-render when statusData changes
 
     if (loading) {
         return (
@@ -140,33 +174,7 @@ export function TicketCharts({ timeRange = '7d' }: TicketChartsProps) {
                 <h3 className="text-lg font-medium text-zinc-900 dark:text-white mb-4">
                     Status Distribution
                 </h3>
-                <ResponsiveContainer width="100%" height={300}>
-                    <PieChart>
-                        <Pie
-                            data={statusData}
-                            cx="50%"
-                            cy="50%"
-                            labelLine={false}
-                            label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                            outerRadius={80}
-                            fill="#8884d8"
-                            dataKey="value"
-                        >
-                            {statusData.map((entry, index) => (
-                                <Cell 
-                                    key={`cell-${index}`} 
-                                    fill={
-                                        entry.name === 'New' ? COLORS.blue :
-                                        entry.name === 'In progress' ? COLORS.yellow :
-                                        entry.name === 'Resolved' ? COLORS.green :
-                                        COLORS.gray
-                                    } 
-                                />
-                            ))}
-                        </Pie>
-                        <Tooltip />
-                    </PieChart>
-                </ResponsiveContainer>
+                {renderPieChart}
             </div>
 
             {/* Priority Distribution Bar Chart */}
@@ -174,14 +182,15 @@ export function TicketCharts({ timeRange = '7d' }: TicketChartsProps) {
                 <h3 className="text-lg font-medium text-zinc-900 dark:text-white mb-4">
                     Priority Breakdown
                 </h3>
+                {/* Optimization: Directly use ResponsiveContainer here as logic is simple */}
                 <ResponsiveContainer width="100%" height={300}>
                     <BarChart data={priorityData}>
                         <CartesianGrid strokeDasharray="3 3" />
                         <XAxis dataKey="name" />
                         <YAxis />
                         <Tooltip />
-                        <Bar 
-                            dataKey="value" 
+                        <Bar
+                            dataKey="value"
                             fill={COLORS.indigo}
                             radius={[8, 8, 0, 0]}
                         />
@@ -200,10 +209,10 @@ export function TicketCharts({ timeRange = '7d' }: TicketChartsProps) {
                         <XAxis dataKey="date" />
                         <YAxis />
                         <Tooltip />
-                        <Line 
-                            type="monotone" 
-                            dataKey="tickets" 
-                            stroke={COLORS.blue} 
+                        <Line
+                            type="monotone"
+                            dataKey="tickets"
+                            stroke={COLORS.blue}
                             strokeWidth={2}
                             dot={{ fill: COLORS.blue, strokeWidth: 2, r: 4 }}
                             activeDot={{ r: 6 }}
@@ -213,4 +222,4 @@ export function TicketCharts({ timeRange = '7d' }: TicketChartsProps) {
             </div>
         </div>
     )
-}
+})

@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge'
 import { StatusSelect } from '@/components/tickets/status-select'
 import { AssigneeSelect } from '@/components/tickets/assignee-select'
 import { TicketProgressBar } from '@/components/tickets/ticket-progress-bar'
+import { TicketComments } from '@/components/tickets/ticket-comments'
 import { useUserRole } from '@/hooks/use-user-role'
 import Link from 'next/link'
 import { ArrowLeft, User as UserIcon, Calendar, AlertTriangle, MapPin } from 'lucide-react'
@@ -15,12 +16,19 @@ import { ArrowLeft, User as UserIcon, Calendar, AlertTriangle, MapPin } from 'lu
 export default function TicketDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const [ticket, setTicket] = useState<any>(null)
     const [loading, setLoading] = useState(true)
+    const [currentUserId, setCurrentUserId] = useState<string | null>(null)
     const { userRole, loading: roleLoading } = useUserRole()
     const supabase = createClient()
 
     useEffect(() => {
         const fetchTicket = async () => {
             const id = (await params).id
+
+            // Get current user
+            const { data: { user } } = await supabase.auth.getUser()
+            if (user) {
+                setCurrentUserId(user.id)
+            }
 
             const { data: ticketData, error } = await supabase
                 .from('tickets')
@@ -60,6 +68,7 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
     }
 
     const priorityVariant = (priorityVariants[ticket.priority] || 'default') as any
+    const isReporter = currentUserId === ticket.created_by
 
     return (
         <div className="space-y-6">
@@ -83,7 +92,14 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
                     </div>
 
                     {/* Progress Bar */}
-                    <TicketProgressBar currentStatus={ticket.status} />
+                    <TicketProgressBar
+                        currentStatus={ticket.status}
+                        ticketId={ticket.id}
+                        isReporter={isReporter}
+                    />
+
+                    {/* Comments Section */}
+                    <TicketComments ticketId={ticket.id} />
                 </div>
 
                 <div className="space-y-6">

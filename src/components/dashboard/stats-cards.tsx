@@ -1,12 +1,12 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useMemo, memo } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { 
-    Ticket, 
-    AlertTriangle, 
-    CheckCircle, 
-    Clock, 
+import {
+    Ticket,
+    AlertTriangle,
+    CheckCircle,
+    Clock,
     TrendingUp,
     Users
 } from 'lucide-react'
@@ -25,7 +25,8 @@ interface Stats {
     trendPercentage: number
 }
 
-export function StatsCards({ timeRange = '7d' }: StatsCardsProps) {
+// Optimization: Memoize the component to prevent re-renders unless props change
+export const StatsCards = memo(function StatsCards({ timeRange = '7d' }: StatsCardsProps) {
     const [stats, setStats] = useState<Stats>({
         totalTickets: 0,
         openTickets: 0,
@@ -38,11 +39,8 @@ export function StatsCards({ timeRange = '7d' }: StatsCardsProps) {
     const [loading, setLoading] = useState(true)
     const supabase = createClient()
 
-    useEffect(() => {
-        fetchStats()
-    }, [timeRange])
-
-    const fetchStats = async () => {
+    // Optimization: useCallback for fetch function
+    const fetchStats = useCallback(async () => {
         setLoading(true)
         try {
             // Calculate date range
@@ -109,12 +107,12 @@ export function StatsCards({ timeRange = '7d' }: StatsCardsProps) {
                 .gte('created_at', previousStartDate.toISOString())
                 .lt('created_at', startDate.toISOString())
 
-            const trendPercentage = totalTickets && previousTickets && previousTickets > 0 
-                ? ((totalTickets - previousTickets) / previousTickets) * 100 
+            const trendPercentage = totalTickets && previousTickets && previousTickets > 0
+                ? ((totalTickets - previousTickets) / previousTickets) * 100
                 : 0
 
-            const activeAgents = activeAgentsData 
-                ? [...new Set(activeAgentsData.map((t: any) => t.assigned_to))].length 
+            const activeAgents = activeAgentsData
+                ? [...new Set(activeAgentsData.map((t: any) => t.assigned_to))].length
                 : 0
 
             if (totalError || openError || resolvedError || criticalError || agentsError || avgTimeError || previousError) {
@@ -135,9 +133,14 @@ export function StatsCards({ timeRange = '7d' }: StatsCardsProps) {
         } finally {
             setLoading(false)
         }
-    }
+    }, [timeRange, supabase]) // Correct dependencies
 
-    const statCards = [
+    useEffect(() => {
+        fetchStats()
+    }, [fetchStats])
+
+    // Optimization: Memoize stat cards array
+    const statCards = useMemo(() => [
         {
             title: 'Total Tickets',
             value: stats.totalTickets,
@@ -175,9 +178,10 @@ export function StatsCards({ timeRange = '7d' }: StatsCardsProps) {
             icon: Users,
             color: 'indigo'
         }
-    ]
+    ], [stats]) // Only re-create when stats change
 
-    const getColorClasses = (color: string) => {
+    // Optimization: useCallback for color helper
+    const getColorClasses = useCallback((color: string) => {
         const colors = {
             blue: 'bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400',
             yellow: 'bg-yellow-50 text-yellow-600 dark:bg-yellow-900/20 dark:text-yellow-400',
@@ -187,7 +191,7 @@ export function StatsCards({ timeRange = '7d' }: StatsCardsProps) {
             indigo: 'bg-indigo-50 text-indigo-600 dark:bg-indigo-900/20 dark:text-indigo-400'
         }
         return colors[color as keyof typeof colors] || colors.blue
-    }
+    }, [])
 
     if (loading) {
         return (
@@ -218,14 +222,12 @@ export function StatsCards({ timeRange = '7d' }: StatsCardsProps) {
                                 </p>
                                 {stat.trend !== undefined && (
                                     <div className="flex items-center mt-2">
-                                        <TrendingUp 
-                                            className={`h-4 w-4 mr-1 ${
-                                                stat.trend >= 0 ? 'text-green-500' : 'text-red-500'
-                                            }`} 
+                                        <TrendingUp
+                                            className={`h-4 w-4 mr-1 ${stat.trend >= 0 ? 'text-green-500' : 'text-red-500'
+                                                }`}
                                         />
-                                        <span className={`text-sm ${
-                                            stat.trend >= 0 ? 'text-green-500' : 'text-red-500'
-                                        }`}>
+                                        <span className={`text-sm ${stat.trend >= 0 ? 'text-green-500' : 'text-red-500'
+                                            }`}>
                                             {stat.trend >= 0 ? '+' : ''}{stat.trend}%
                                         </span>
                                     </div>
@@ -240,4 +242,4 @@ export function StatsCards({ timeRange = '7d' }: StatsCardsProps) {
             })}
         </div>
     )
-}
+})
