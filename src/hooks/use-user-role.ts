@@ -4,10 +4,10 @@ import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Database } from '@/types/database.types'
 
-type User = Database['public']['Tables']['users']['Row']
+type UserRole = Database['public']['Tables']['users']['Row']['role']
 
 export function useUserRole() {
-    const [userRole, setUserRole] = useState<string | null>(null)
+    const [userRole, setUserRole] = useState<UserRole | null>(null)
     const [loading, setLoading] = useState(true)
     const supabase = createClient()
 
@@ -16,19 +16,20 @@ export function useUserRole() {
             try {
                 const { data: { user } } = await supabase.auth.getUser()
                 if (user) {
-                    const { data } = await supabase
+                    const { data, error } = await supabase
                         .from('users')
                         .select('role')
                         .eq('id', user.id)
-                        .returns<User>()
-                        .single()
+                        .single<{ role: UserRole }>()
 
-                    if (data) {
+                    if (error) {
+                        console.error('Error fetching user role:', error)
+                    } else if (data) {
                         setUserRole(data.role)
                     }
                 }
             } catch (error) {
-                console.error('Error fetching user role:', error)
+                console.error('Error in useUserRole:', error)
             } finally {
                 setLoading(false)
             }
