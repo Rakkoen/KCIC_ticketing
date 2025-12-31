@@ -8,7 +8,7 @@ import { useRouter } from 'next/navigation'
 interface BulkActionsProps {
     selectedIds: string[]
     onComplete: () => void
-    entityType: 'tickets' | 'incidents'
+    entityType?: 'tickets' // Kept for compatibility but only tickets supported
 }
 
 export function BulkActions({ selectedIds, onComplete, entityType }: BulkActionsProps) {
@@ -23,10 +23,9 @@ export function BulkActions({ selectedIds, onComplete, entityType }: BulkActions
     const handleBulkStatusChange = async (newStatus: string) => {
         setLoading(true)
         try {
-            const table = entityType === 'tickets' ? 'tickets' : 'incidents'
             const { error } = await supabase
-                .from(table)
-                .update({ status: newStatus })
+                .from('tickets')
+                .update({ status: newStatus } as any)
                 .in('id', selectedIds)
 
             if (!error) {
@@ -47,10 +46,9 @@ export function BulkActions({ selectedIds, onComplete, entityType }: BulkActions
 
         setLoading(true)
         try {
-            const table = entityType === 'tickets' ? 'tickets' : 'incidents'
             const { error } = await supabase
-                .from(table)
-                .update({ assigned_to: assigneeId })
+                .from('tickets')
+                .update({ assigned_to: assigneeId } as any)
                 .in('id', selectedIds)
 
             if (!error) {
@@ -65,15 +63,14 @@ export function BulkActions({ selectedIds, onComplete, entityType }: BulkActions
     }
 
     const handleBulkDelete = async () => {
-        if (!confirm(`Are you sure you want to delete ${selectedIds.length} ${entityType}?`)) {
+        if (!confirm(`Are you sure you want to delete ${selectedIds.length} tickets?`)) {
             return
         }
 
         setLoading(true)
         try {
-            const table = entityType === 'tickets' ? 'tickets' : 'incidents'
             const { error } = await supabase
-                .from(table)
+                .from('tickets')
                 .delete()
                 .in('id', selectedIds)
 

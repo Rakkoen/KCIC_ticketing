@@ -111,7 +111,8 @@ export default function TicketReportPage() {
     const generatePDF = () => {
         setGenerating(true)
         try {
-            const doc = new jsPDF()
+            // Use landscape orientation to fit all 12 columns
+            const doc = new jsPDF({ orientation: 'landscape' })
 
             // Title
             doc.setFontSize(18)
@@ -140,26 +141,93 @@ export default function TicketReportPage() {
                 filterY += 6
             }
 
-            // Table data
+            // Table data with all 12 columns
             const tableData = tickets.map(ticket => [
+                // 1. Timestamp
+                new Date(ticket.created_at).toLocaleString('en-US', {
+                    month: '2-digit',
+                    day: '2-digit',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                }),
+                // 2. Ticket Number
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 (ticket as any).custom_id || 'N/A',
-                ticket.title.length > 30 ? ticket.title.substring(0, 30) + '...' : ticket.title,
-                ticket.priority.toUpperCase(),
-                ticket.status.replace('_', ' ').toUpperCase(),
+                // 3. Report Date
+                new Date(ticket.created_at).toLocaleDateString('en-US', {
+                    month: '2-digit',
+                    day: '2-digit',
+                    year: 'numeric'
+                }),
+                // 4. Reporter Name
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                (ticket as any).assigned_to_user?.full_name || 'Unassigned',
-                new Date(ticket.created_at).toLocaleDateString()
+                (ticket as any).created_by_user?.full_name || 'Unknown',
+                // 5. Report Receiver Name (assigned_to)
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                (ticket as any).assigned_to_user?.full_name || 'All Users',
+                // 6. Station & Location
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                `${(ticket as any).station || 'N/A'}${(ticket as any).location ? ' - ' + (ticket as any).location : ''}`,
+                // 7. Asset Category (Equipment)
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                (ticket as any).equipment_category || 'N/A',
+                // 8. Problem Description (truncated)
+                ticket.description.length > 40 ? ticket.description.substring(0, 40) + '...' : ticket.description,
+                // 9. Priority
+                ticket.priority.toUpperCase(),
+                // 10. Status
+                ticket.status.replace('_', ' ').toUpperCase(),
+                // 11. WR Document Number
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                (ticket as any).wr_document_number || 'N/A',
+                // 12. Escalation Status
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                ((ticket as any).escalation_status || 'no').toUpperCase()
             ])
 
-            // Generate table
+            // Generate table with all 12 columns
             autoTable(doc, {
-                head: [['Ticket ID', 'Title', 'Priority', 'Status', 'Assigned To', 'Created']],
+                head: [[
+                    'Timestamp',
+                    'Ticket #',
+                    'Report Date',
+                    'Reporter',
+                    'Receiver',
+                    'Station & Loc',
+                    'Asset Cat.',
+                    'Problem',
+                    'Priority',
+                    'Status',
+                    'WR Doc #',
+                    'Escalation'
+                ]],
                 body: tableData,
                 startY: filterY + 6,
-                styles: { fontSize: 8 },
-                headStyles: { fillColor: [79, 70, 229] },
-                alternateRowStyles: { fillColor: [245, 245, 245] }
+                styles: {
+                    fontSize: 7,
+                    cellPadding: 2
+                },
+                headStyles: {
+                    fillColor: [79, 70, 229],
+                    fontSize: 7,
+                    fontStyle: 'bold'
+                },
+                alternateRowStyles: { fillColor: [245, 245, 245] },
+                columnStyles: {
+                    0: { cellWidth: 25 }, // Timestamp
+                    1: { cellWidth: 20 }, // Ticket #
+                    2: { cellWidth: 18 }, // Report Date
+                    3: { cellWidth: 20 }, // Reporter
+                    4: { cellWidth: 20 }, // Receiver
+                    5: { cellWidth: 25 }, // Station & Location
+                    6: { cellWidth: 18 }, // Asset Category
+                    7: { cellWidth: 35 }, // Problem
+                    8: { cellWidth: 16 }, // Priority
+                    9: { cellWidth: 18 }, // Status
+                    10: { cellWidth: 22 }, // WR Doc #
+                    11: { cellWidth: 18 }  // Escalation
+                }
             })
 
             // Save PDF

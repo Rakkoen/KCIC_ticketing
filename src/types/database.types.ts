@@ -50,11 +50,17 @@ export interface Database {
             tickets: {
                 Row: {
                     id: string
+                    custom_id: string | null
                     title: string
                     description: string
                     status: 'open' | 'in_progress' | 'on_escalation' | 'resolved' | 'closed'
                     priority: 'low' | 'medium' | 'high' | 'critical'
-                    station: 'Halim' | 'Karawang' | 'Padalarang' | 'Tegalluar' | null
+                    station: 'Halim' | 'Karawang' | 'Padalarang' | 'Tegalluar' | 'Depo Tegal Luar' | null
+                    location: string | null
+                    equipment_category: string | null
+                    wr_document_number: string | null
+                    escalation_status: 'yes' | 'no' | 'pending'
+                    comments: string | null
                     created_by: string | null
                     assigned_to: string | null
                     created_at: string
@@ -62,11 +68,17 @@ export interface Database {
                 }
                 Insert: {
                     id?: string
+                    custom_id?: string | null
                     title: string
                     description: string
-                    status?: 'new' | 'in_progress' | 'resolved' | 'closed'
+                    status?: 'open' | 'in_progress' | 'on_escalation' | 'resolved' | 'closed'
                     priority?: 'low' | 'medium' | 'high' | 'critical'
-                    station?: 'Halim' | 'Karawang' | 'Padalarang' | 'Tegalluar' | null
+                    station?: 'Halim' | 'Karawang' | 'Padalarang' | 'Tegalluar' | 'Depo Tegal Luar' | null
+                    location?: string | null
+                    equipment_category?: string | null
+                    wr_document_number?: string | null
+                    escalation_status?: 'yes' | 'no' | 'pending'
+                    comments?: string | null
                     created_by?: string | null
                     assigned_to?: string | null
                     created_at?: string
@@ -74,11 +86,17 @@ export interface Database {
                 }
                 Update: {
                     id?: string
+                    custom_id?: string | null
                     title?: string
                     description?: string
-                    status?: 'new' | 'in_progress' | 'resolved' | 'closed'
+                    status?: 'open' | 'in_progress' | 'on_escalation' | 'resolved' | 'closed'
                     priority?: 'low' | 'medium' | 'high' | 'critical'
-                    station?: 'Halim' | 'Karawang' | 'Padalarang' | 'Tegalluar' | null
+                    station?: 'Halim' | 'Karawang' | 'Padalarang' | 'Tegalluar' | 'Depo Tegal Luar' | null
+                    location?: string | null
+                    equipment_category?: string | null
+                    wr_document_number?: string | null
+                    escalation_status?: 'yes' | 'no' | 'pending'
+                    comments?: string | null
                     created_by?: string | null
                     assigned_to?: string | null
                     created_at?: string

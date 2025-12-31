@@ -3,7 +3,7 @@
 import React from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Users, FileText, BarChart2, BookOpen, Settings, LogOut, Home, AlertTriangle, Clock, FileBarChart } from 'lucide-react'
+import { Users, FileText, BarChart2, BookOpen, Settings, LogOut, Home, Clock, FileBarChart } from 'lucide-react'
 import { User } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
@@ -14,7 +14,6 @@ import { useUserRole } from '@/hooks/use-user-role'
 const navigation = [
     { name: 'Dashboard', href: '/', icon: Home },
     { name: 'Tickets', href: '/tickets', icon: FileText },
-    { name: 'Incidents', href: '/incidents', icon: AlertTriangle },
     { name: 'Knowledge Base', href: '/knowledge-base', icon: BookOpen },
     { name: 'Analytics', href: '/analytics', icon: BarChart2 },
     { name: 'Reports', href: '/reports', icon: FileBarChart },

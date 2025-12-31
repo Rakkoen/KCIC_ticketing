@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { Badge } from '@/components/ui/badge'
 import { Database } from '@/types/database.types'
-import { User as UserIcon, Calendar, MoreVertical, Edit, Trash2, MapPin } from 'lucide-react'
+import { User as UserIcon, Calendar, MoreVertical, Edit, Trash2, MapPin, Package, FileText, AlertCircle, MessageSquare } from 'lucide-react'
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
@@ -135,7 +135,37 @@ export function TicketCard({ ticket, viewMode = 'grid', onDelete }: TicketCardPr
                                         {(ticket as any).station}
                                     </div>
                                 )}
+                                {(ticket as any).location && (
+                                    <div className="flex items-center">
+                                        <MapPin className="h-3 w-3 mr-1" />
+                                        Location: {(ticket as any).location}
+                                    </div>
+                                )}
+                                {(ticket as any).equipment_category && (
+                                    <div className="flex items-center">
+                                        <Package className="h-3 w-3 mr-1" />
+                                        {(ticket as any).equipment_category}
+                                    </div>
+                                )}
+                                {(ticket as any).wr_document_number && (
+                                    <div className="flex items-center">
+                                        <FileText className="h-3 w-3 mr-1" />
+                                        WR: {(ticket as any).wr_document_number}
+                                    </div>
+                                )}
+                                {(ticket as any).escalation_status && (ticket as any).escalation_status !== 'no' && (
+                                    <div className="flex items-center">
+                                        <AlertCircle className="h-3 w-3 mr-1" />
+                                        Escalation: {(ticket as any).escalation_status}
+                                    </div>
+                                )}
                             </div>
+                            {(ticket as any).comments && (
+                                <div className="mt-2 text-xs text-zinc-500 dark:text-zinc-400 flex items-start">
+                                    <MessageSquare className="h-3 w-3 mr-1 mt-0.5 flex-shrink-0" />
+                                    <span className="line-clamp-2">{(ticket as any).comments}</span>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </Link>
@@ -208,6 +238,36 @@ export function TicketCard({ ticket, viewMode = 'grid', onDelete }: TicketCardPr
                     <div className="mt-1 text-xs text-zinc-500 dark:text-zinc-400 flex items-center">
                         <MapPin className="h-3 w-3 mr-1" />
                         {(ticket as any).station}
+                    </div>
+                )}
+                {(ticket as any).location && (
+                    <div className="mt-1 text-xs text-zinc-500 dark:text-zinc-400 flex items-center">
+                        <MapPin className="h-3 w-3 mr-1" />
+                        Location: {(ticket as any).location}
+                    </div>
+                )}
+                {(ticket as any).equipment_category && (
+                    <div className="mt-1 text-xs text-zinc-500 dark:text-zinc-400 flex items-center">
+                        <Package className="h-3 w-3 mr-1" />
+                        Asset Category: {(ticket as any).equipment_category}
+                    </div>
+                )}
+                {(ticket as any).wr_document_number && (
+                    <div className="mt-1 text-xs text-zinc-500 dark:text-zinc-400 flex items-center">
+                        <FileText className="h-3 w-3 mr-1" />
+                        WR: {(ticket as any).wr_document_number}
+                    </div>
+                )}
+                {(ticket as any).escalation_status && (ticket as any).escalation_status !== 'no' && (
+                    <div className="mt-1 text-xs text-zinc-500 dark:text-zinc-400 flex items-center">
+                        <AlertCircle className="h-3 w-3 mr-1" />
+                        Escalation: {(ticket as any).escalation_status}
+                    </div>
+                )}
+                {(ticket as any).comments && (
+                    <div className="mt-2 text-xs text-zinc-500 dark:text-zinc-400 flex items-start">
+                        <MessageSquare className="h-3 w-3 mr-1 mt-0.5 flex-shrink-0" />
+                        <span className="line-clamp-2">{(ticket as any).comments}</span>
                     </div>
                 )}
             </Link>

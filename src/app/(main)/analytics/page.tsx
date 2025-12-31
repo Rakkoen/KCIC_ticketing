@@ -3,12 +3,11 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
-import { Calendar, TrendingUp, Users, Ticket, AlertTriangle, Clock, CheckCircle } from 'lucide-react'
+import { Calendar, TrendingUp, Users, Ticket, Clock, CheckCircle } from 'lucide-react'
 import { format, subDays, startOfDay, endOfDay } from 'date-fns'
 import { Database } from '@/types/database.types'
 
 type Ticket = Database['public']['Tables']['tickets']['Row']
-type Incident = Database['public']['Tables']['incidents']['Row']
 
 export default function AnalyticsPage() {
     const [dateRange, setDateRange] = useState('7d')
@@ -18,8 +17,7 @@ export default function AnalyticsPage() {
         resolvedTickets: 0,
         avgResponseTime: '0h',
         avgResolutionTime: '0h',
-        slaCompliance: 0,
-        activeIncidents: 0
+        slaCompliance: 0
     })
     const [trendData, setTrendData] = useState<{ date: string; tickets: number; resolved: number }[]>([])
     const [statusDistribution, setStatusDistribution] = useState<{ name: string; value: number }[]>([])
@@ -51,13 +49,6 @@ export default function AnalyticsPage() {
                 .lte('created_at', endDate.toISOString())
                 .returns<Ticket[]>()
 
-            // Fetch incidents
-            const { data: incidents } = await supabase
-                .from('incidents')
-                .select('*')
-                .gte('detected_at', startDate.toISOString())
-                .lte('detected_at', endDate.toISOString())
-                .returns<Incident[]>()
 
             if (tickets) {
                 // Calculate KPIs
@@ -94,8 +85,7 @@ export default function AnalyticsPage() {
                     resolvedTickets: resolved.length,
                     avgResponseTime: `${Math.round(avgResponse)}h`,
                     avgResolutionTime: `${Math.round(avgResolution)}h`,
-                    slaCompliance: Math.round(compliance),
-                    activeIncidents: incidents?.filter(i => i.status !== 'resolved').length || 0
+                    slaCompliance: Math.round(compliance)
                 })
 
                 // Status distribution
@@ -217,15 +207,6 @@ export default function AnalyticsPage() {
                     </div>
                     <p className="text-3xl font-bold text-zinc-900 dark:text-white">{stats.slaCompliance}%</p>
                     <p className="text-sm text-zinc-500 mt-1">Within SLA deadlines</p>
-                </div>
-
-                <div className="bg-white dark:bg-zinc-800 rounded-lg p-6 border border-zinc-200 dark:border-zinc-700">
-                    <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm text-zinc-500 dark:text-zinc-400">Active Incidents</span>
-                        <AlertTriangle className="h-5 w-5 text-orange-600" />
-                    </div>
-                    <p className="text-3xl font-bold text-zinc-900 dark:text-white">{stats.activeIncidents}</p>
-                    <p className="text-sm text-zinc-500 mt-1">Requires attention</p>
                 </div>
 
                 <div className="bg-white dark:bg-zinc-800 rounded-lg p-6 border border-zinc-200 dark:border-zinc-700">

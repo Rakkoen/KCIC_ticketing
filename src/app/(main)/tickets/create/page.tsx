@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, Save, Loader2, MapPin } from 'lucide-react'
+import { ArrowLeft, Save, Loader2, MapPin, Wrench, MessageSquare } from 'lucide-react'
 import Link from 'next/link'
 
 export default function CreateTicketPage() {
@@ -11,7 +11,10 @@ export default function CreateTicketPage() {
     const [description, setDescription] = useState('')
     const [priority, setPriority] = useState<'low' | 'medium' | 'high' | 'critical'>('medium')
     const [status, setStatus] = useState<'open' | 'in_progress' | 'on_escalation' | 'resolved' | 'closed'>('open')
-    const [station, setStation] = useState<'Halim' | 'Karawang' | 'Padalarang' | 'Tegalluar' | 'Depo Tegal Luar' | ''>('')
+    const [station, setStation] = useState<'Halim' | 'Karawang' | 'Padalarang' | 'Tegalluar' | ''>('')
+    const [location, setLocation] = useState('')
+    const [equipmentCategory, setEquipmentCategory] = useState('')
+    const [comments, setComments] = useState('')
     const [loading, setLoading] = useState(false)
     const router = useRouter()
     const supabase = createClient()
@@ -31,22 +34,47 @@ export default function CreateTicketPage() {
                 return
             }
 
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore
-            const { error } = await supabase.from('tickets').insert({
+            const insertData = {
                 title,
                 description,
                 priority,
                 status,
                 station,
+                location: location || null,
+                equipment_category: equipmentCategory || null,
+                comments: comments || null,
+                escalation_status: status === 'on_escalation' ? 'yes' : 'no',
                 created_by: user.id
-            })
+            }
+
+            console.log('=== DEBUG: INSERT DATA ===')
+            console.log('User ID:', user.id)
+            console.log('User Email:', user.email)
+            console.log('Insert Payload:', JSON.stringify(insertData, null, 2))
+            console.log('========================')
+
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            const { data, error } = await supabase.from('tickets').insert(insertData).select()
+
+            console.log('=== DEBUG: RESPONSE ===')
+            console.log('Data:', data)
+            console.log('Error:', error)
+            console.log('======================')
 
             if (error) {
                 console.error('Supabase error:', error)
+                console.error('Error details:', {
+                    message: error.message,
+                    details: error.details,
+                    hint: error.hint,
+                    code: error.code
+                })
+                alert(`Failed to create ticket: ${error.message || 'Unknown error'}`)
                 throw error
             }
 
+            alert('Ticket created successfully!')
             router.push('/tickets')
             router.refresh()
         } catch (error) {
@@ -132,6 +160,43 @@ export default function CreateTicketPage() {
                         </div>
                     </div>
 
+                    {/* Location */}
+                    <div className="mt-4">
+                        <label htmlFor="location" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                            Location
+                        </label>
+                        <input
+                            type="text"
+                            id="location"
+                            value={location}
+                            onChange={(e) => setLocation(e.target.value)}
+                            className="mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white px-3 py-2 border"
+                            placeholder="e.g., Platform 2, Main Hall, Entrance Gate 1"
+                        />
+                        <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">Specific physical location within the station</p>
+                    </div>
+
+                    {/* Equipment Category */}
+                    <div className="mt-4">
+                        <label htmlFor="equipment_category" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                            Asset Category (Equipment)
+                        </label>
+                        <div className="mt-1 relative rounded-md shadow-sm">
+                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <Wrench className="h-4 w-4 text-zinc-400" />
+                            </div>
+                            <input
+                                type="text"
+                                id="equipment_category"
+                                value={equipmentCategory}
+                                onChange={(e) => setEquipmentCategory(e.target.value)}
+                                className="block w-full pl-10 rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white px-3 py-2 border"
+                                placeholder="e.g., Electrical, Mechanical, IT, HVAC, Safety, etc."
+                            />
+                        </div>
+                        <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">Type of equipment/asset involved (e.g., Electrical, Mechanical, IT, Civil, Plumbing, HVAC, Safety)</p>
+                    </div>
+
                     {/* Priority and Status */}
                     <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
                         <div>
@@ -170,6 +235,25 @@ export default function CreateTicketPage() {
                                 <option value="closed">Closed</option>
                             </select>
                         </div>
+                    </div>
+
+                    {/* Comments / Troubleshooting Notes */}
+                    <div className="mt-4">
+                        <label htmlFor="comments" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                            <div className="flex items-center gap-2">
+                                <MessageSquare className="h-4 w-4" />
+                                Comments / Troubleshooting Notes
+                            </div>
+                        </label>
+                        <textarea
+                            id="comments"
+                            rows={3}
+                            value={comments}
+                            onChange={(e) => setComments(e.target.value)}
+                            className="mt-1 block w-full rounded-md border-zinc-300 dark:border-zinc-700 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white px-3 py-2 border"
+                            placeholder="Any additional notes or troubleshooting actions taken..."
+                        />
+                        <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">Optional internal notes about the issue or actions taken</p>
                     </div>
                 </div>
 

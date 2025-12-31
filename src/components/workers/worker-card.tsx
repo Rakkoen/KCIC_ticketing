@@ -1,12 +1,11 @@
 import Link from 'next/link'
 import { Database } from '@/types/database.types'
 import { AvailabilityBadge } from './availability-badge'
-import { Mail, Phone, Ticket, AlertTriangle, Clock } from 'lucide-react'
+import { Mail, Phone, Ticket, Clock } from 'lucide-react'
 
 type Worker = Database['public']['Tables']['users']['Row'] & {
     tickets_assigned?: number
     tickets_in_progress?: number
-    incidents_assigned?: number
 }
 
 interface WorkerCardProps {
@@ -92,7 +91,7 @@ export function WorkerCard({ worker }: WorkerCardProps) {
                 </div>
 
                 {/* Workload Stats */}
-                <div className="grid grid-cols-3 gap-4 pt-4 border-t border-zinc-200 dark:border-zinc-700">
+                <div className="grid grid-cols-2 gap-4 pt-4 border-t border-zinc-200 dark:border-zinc-700">
                     <div className="text-center">
                         <div className="flex items-center justify-center gap-1 mb-1">
                             <Ticket className="h-4 w-4 text-zinc-400" />
@@ -109,15 +108,6 @@ export function WorkerCard({ worker }: WorkerCardProps) {
                         </div>
                         <p className="text-lg font-semibold text-zinc-900 dark:text-white">
                             {worker.tickets_in_progress || 0}
-                        </p>
-                    </div>
-                    <div className="text-center">
-                        <div className="flex items-center justify-center gap-1 mb-1">
-                            <AlertTriangle className="h-4 w-4 text-zinc-400" />
-                            <span className="text-xs text-zinc-500 dark:text-zinc-400">Incidents</span>
-                        </div>
-                        <p className="text-lg font-semibold text-zinc-900 dark:text-white">
-                            {worker.incidents_assigned || 0}
                         </p>
                     </div>
                 </div>
