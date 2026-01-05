@@ -3,17 +3,20 @@
 import { useState } from 'react'
 
 import { useRouter } from 'next/navigation'
-import { Loader2 } from 'lucide-react'
+import { Loader2, Eye, EyeOff } from 'lucide-react'
 import Link from 'next/link'
 
 export default function RegisterPage() {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
+    const [confirmPassword, setConfirmPassword] = useState('')
     const [fullName, setFullName] = useState('')
     const [role, setRole] = useState('employee')
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const [success, setSuccess] = useState(false)
+    const [showPassword, setShowPassword] = useState(false)
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false)
     const router = useRouter()
 
 
@@ -21,6 +24,20 @@ export default function RegisterPage() {
         e.preventDefault()
         setLoading(true)
         setError(null)
+
+        // Validate password confirmation
+        if (password !== confirmPassword) {
+            setError('Passwords do not match')
+            setLoading(false)
+            return
+        }
+
+        // Validate password strength
+        if (password.length < 6) {
+            setError('Password must be at least 6 characters long')
+            setLoading(false)
+            return
+        }
 
         try {
             const response = await fetch('/api/register', {
@@ -136,19 +153,68 @@ export default function RegisterPage() {
                         <label htmlFor="password" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
                             Password
                         </label>
-                        <div className="mt-1">
+                        <div className="mt-1 relative">
                             <input
                                 id="password"
                                 name="password"
-                                type="password"
+                                type={showPassword ? "text" : "password"}
                                 autoComplete="new-password"
                                 required
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
-                                className="block w-full appearance-none rounded-md border border-zinc-300 dark:border-zinc-600 px-3 py-2 placeholder-zinc-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white"
+                                className="block w-full appearance-none rounded-md border border-zinc-300 dark:border-zinc-600 px-3 py-2 pr-10 placeholder-zinc-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white"
                                 placeholder="Create a strong password"
                             />
+                            <button
+                                type="button"
+                                onClick={() => setShowPassword(!showPassword)}
+                                className="absolute inset-y-0 right-0 flex items-center pr-3 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
+                            >
+                                {showPassword ? (
+                                    <EyeOff className="h-5 w-5" />
+                                ) : (
+                                    <Eye className="h-5 w-5" />
+                                )}
+                            </button>
                         </div>
+                        <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+                            Must be at least 6 characters long
+                        </p>
+                    </div>
+
+                    <div>
+                        <label htmlFor="confirmPassword" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                            Confirm Password
+                        </label>
+                        <div className="mt-1 relative">
+                            <input
+                                id="confirmPassword"
+                                name="confirmPassword"
+                                type={showConfirmPassword ? "text" : "password"}
+                                autoComplete="new-password"
+                                required
+                                value={confirmPassword}
+                                onChange={(e) => setConfirmPassword(e.target.value)}
+                                className="block w-full appearance-none rounded-md border border-zinc-300 dark:border-zinc-600 px-3 py-2 pr-10 placeholder-zinc-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white"
+                                placeholder="Re-type your password"
+                            />
+                            <button
+                                type="button"
+                                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                className="absolute inset-y-0 right-0 flex items-center pr-3 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
+                            >
+                                {showConfirmPassword ? (
+                                    <EyeOff className="h-5 w-5" />
+                                ) : (
+                                    <Eye className="h-5 w-5" />
+                                )}
+                            </button>
+                        </div>
+                        {confirmPassword && password !== confirmPassword && (
+                            <p className="mt-1 text-xs text-red-600 dark:text-red-400">
+                                Passwords do not match
+                            </p>
+                        )}
                     </div>
 
                     <div>

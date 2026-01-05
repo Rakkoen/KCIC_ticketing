@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Database } from '@/types/database.types'
 import { Trophy, TrendingUp, Clock, CheckCircle, Award } from 'lucide-react'
-import Link from 'next/link'
 
 type User = Database['public']['Tables']['users']['Row']
 type Ticket = Database['public']['Tables']['tickets']['Row']
@@ -211,9 +210,9 @@ export default function AgentPerformancePage() {
                                         #{index + 1}
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
-                                        <Link href={`/workers/${agent.agent.id}`} className="text-sm font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400">
+                                        <span className="text-sm font-medium text-zinc-900 dark:text-white">
                                             {agent.agent.full_name || agent.agent.email}
-                                        </Link>
+                                        </span>
                                         <p className="text-xs text-zinc-500">{agent.agent.role}</p>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-zinc-900 dark:text-white">

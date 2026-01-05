@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Settings, Bell, Palette, Layout, Save, Loader2 } from 'lucide-react'
+import { Bell, Palette, Layout, Save, Loader2 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
 export default function SettingsPage() {
@@ -21,6 +21,7 @@ export default function SettingsPage() {
 
     useEffect(() => {
         fetchPreferences()
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
     const fetchPreferences = async () => {

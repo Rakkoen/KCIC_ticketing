@@ -60,13 +60,6 @@ export function QuickActions({ userRole = 'employee' }: QuickActionsProps) {
             icon: TrendingUp,
             href: '/analytics',
             color: 'purple'
-        },
-        {
-            title: 'Knowledge Base',
-            description: 'Manage help articles',
-            icon: FileText,
-            href: '/knowledge-base',
-            color: 'green'
         }
     ]
 
