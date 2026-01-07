@@ -3,10 +3,14 @@
 import Link from 'next/link'
 import { Badge } from '@/components/ui/badge'
 import { Database } from '@/types/database.types'
-import { User as UserIcon, Calendar, MoreVertical, Edit, Trash2, MapPin, Package, FileText, AlertCircle, MessageSquare } from 'lucide-react'
+import { User as UserIcon, Calendar, MoreVertical, Edit, Trash2, MapPin, Package, FileText, AlertCircle, MessageSquare, Users, CheckCircle2 } from 'lucide-react'
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
+import { SLAIndicator } from './sla-indicator'
+import { ActivityLogSummary } from './activity-log-summary'
+import { AssignedTechnician } from '@/types/ticket-assignees.types'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 
 type Ticket = Database['public']['Tables']['tickets']['Row'] & {
     created_by_user?: {
@@ -23,9 +27,10 @@ interface TicketCardProps {
     ticket: Ticket
     viewMode?: 'grid' | 'list'
     onDelete?: () => void
+    assignees?: AssignedTechnician[]
 }
 
-export function TicketCard({ ticket, viewMode = 'grid', onDelete }: TicketCardProps) {
+export function TicketCard({ ticket, viewMode = 'grid', onDelete, assignees = [] }: TicketCardProps) {
     const [showMenu, setShowMenu] = useState(false)
     const [deleting, setDeleting] = useState(false)
     const supabase = createClient()
@@ -252,6 +257,39 @@ export function TicketCard({ ticket, viewMode = 'grid', onDelete }: TicketCardPr
                         Asset Category: {(ticket as any).equipment_category}
                     </div>
                 )}
+
+                {/* Assigned Technicians */}
+                {assignees && assignees.length > 0 && (
+                    <div className="mt-3 pt-3 border-t border-zinc-100 dark:border-zinc-700">
+                        <div className="flex items-center gap-1 mb-2">
+                            <Users className="h-3 w-3 text-zinc-500" />
+                            <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
+                                Assigned Technicians
+                            </span>
+                        </div>
+                        <div className="flex flex-wrap gap-1.5">
+                            {assignees.map((assignee) => (
+                                <div
+                                    key={assignee.id}
+                                    className={`flex items-center gap-1 px-2 py-1 rounded text-xs ${assignee.is_primary
+                                            ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300'
+                                            : 'bg-zinc-100 text-zinc-700 dark:bg-zinc-700 dark:text-zinc-300'
+                                        }`}
+                                    title={assignee.email}
+                                >
+                                    <span className="font-medium">{assignee.full_name}</span>
+                                    {assignee.is_primary && (
+                                        <span className="text-[10px] opacity-75">(Primary)</span>
+                                    )}
+                                    {assignee.completed_at && (
+                                        <CheckCircle2 className="h-3 w-3 text-green-600 dark:text-green-400" />
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
                 {(ticket as any).wr_document_number && (
                     <div className="mt-1 text-xs text-zinc-500 dark:text-zinc-400 flex items-center">
                         <FileText className="h-3 w-3 mr-1" />
@@ -270,6 +308,12 @@ export function TicketCard({ ticket, viewMode = 'grid', onDelete }: TicketCardPr
                         <span className="line-clamp-2">{(ticket as any).comments}</span>
                     </div>
                 )}
+
+                {/* SLA Indicator */}
+                <SLAIndicator ticket={ticket} compact />
+
+                {/* Activity Log Summary */}
+                <ActivityLogSummary ticketId={ticket.id} limit={2} />
             </Link>
 
             {/* Action Menu */}

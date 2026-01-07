@@ -61,8 +61,8 @@ export default function TicketsPage() {
                 .from('tickets')
                 .select(`
                     *,
-                    created_by_user:users!created_by(*),
-                    assigned_to_user:users!assigned_to(*)
+                    created_by_user:users!tickets_created_by_fkey(id, full_name, email),
+                    assigned_to_user:users!tickets_assigned_to_fkey(id, full_name, email)
                 `)
 
             // Apply filters
@@ -95,22 +95,28 @@ export default function TicketsPage() {
                 .order('created_at', { ascending: false })
                 .range(from, to)
 
-            if (error) throw error
+            if (error) {
+                console.error('Query error:', error)
+                throw error
+            }
 
             setTickets(data || [])
             setTotalCount(totalCount || 0)
         } catch (error) {
             console.error('Error fetching tickets:', error)
+            setTickets([]) // Set empty array on error so UI doesn't break
         } finally {
             setLoading(false)
         }
-    }, [filters, currentPage, supabase])
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [filters, currentPage]) // supabase removed to prevent infinite loop
 
     useEffect(() => {
         if (viewMode !== 'kanban') {
             fetchTickets()
         }
-    }, [fetchTickets, viewMode])
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [viewMode, filters, currentPage]) // Only re-run when these change
 
     const handleFiltersChange = useCallback((newFilters: TicketFiltersType) => {
         setFilters(newFilters)
@@ -163,7 +169,7 @@ export default function TicketsPage() {
                 doc.text(`Generated: ${new Date().toLocaleString()}`, 14, 28)
                 doc.text(`Total Tickets: ${data.length}`, 14, 34)
 
-                // Table data with all 12 columns
+                // Table data with enhanced columns including SLA
                 const tableData = data.map((ticket: any) => [
                     // 1. Timestamp
                     new Date(ticket.created_at).toLocaleString('en-US', {
@@ -184,24 +190,28 @@ export default function TicketsPage() {
                     // 4. Reporter Name
                     ticket.created_by_user?.full_name || 'Unknown',
                     // 5. Report Receiver Name (assigned_to)
-                    ticket.assigned_to_user?.full_name || 'All Users',
+                    ticket.assigned_to_user?.full_name || 'Unassigned',
                     // 6. Station & Location
                     `${ticket.station || 'N/A'}${ticket.location ? ' - ' + ticket.location : ''}`,
                     // 7. Asset Category (Equipment)
                     ticket.equipment_category || 'N/A',
                     // 8. Problem Description (truncated)
-                    ticket.description.substring(0, 40) + (ticket.description.length > 40 ? '...' : ''),
+                    ticket.description.substring(0, 35) + (ticket.description.length > 35 ? '...' : ''),
                     // 9. Priority
                     ticket.priority.toUpperCase(),
                     // 10. Status
                     ticket.status.replace('_', ' ').toUpperCase(),
-                    // 11. WR Document Number
+                    // 11. SLA Response
+                    (ticket.sla_response_status || 'pending').toUpperCase(),
+                    // 12. SLA Solving
+                    (ticket.sla_solving_status || 'pending').toUpperCase(),
+                    // 13. WR Document Number
                     ticket.wr_document_number || 'N/A',
-                    // 12. Escalation Status
+                    // 14. Escalation Status
                     (ticket.escalation_status || 'no').toUpperCase()
                 ])
 
-                // Generate table with all 12 columns
+                // Generate table with enhanced columns
                 autoTable(doc, {
                     head: [[
                         'Timestamp',
@@ -214,6 +224,8 @@ export default function TicketsPage() {
                         'Problem',
                         'Priority',
                         'Status',
+                        'SLA Resp',
+                        'SLA Solve',
                         'WR Doc #',
                         'Escalation'
                     ]],
@@ -230,18 +242,20 @@ export default function TicketsPage() {
                     },
                     alternateRowStyles: { fillColor: [245, 245, 245] },
                     columnStyles: {
-                        0: { cellWidth: 25 }, // Timestamp
-                        1: { cellWidth: 20 }, // Ticket #
-                        2: { cellWidth: 18 }, // Report Date
-                        3: { cellWidth: 20 }, // Reporter
-                        4: { cellWidth: 20 }, // Receiver
-                        5: { cellWidth: 25 }, // Station & Location
-                        6: { cellWidth: 18 }, // Asset Category
-                        7: { cellWidth: 35 }, // Problem
-                        8: { cellWidth: 16 }, // Priority
-                        9: { cellWidth: 18 }, // Status
-                        10: { cellWidth: 22 }, // WR Doc #
-                        11: { cellWidth: 18 }  // Escalation
+                        0: { cellWidth: 24 }, // Timestamp
+                        1: { cellWidth: 18 }, // Ticket #
+                        2: { cellWidth: 16 }, // Report Date
+                        3: { cellWidth: 18 }, // Reporter
+                        4: { cellWidth: 18 }, // Receiver
+                        5: { cellWidth: 22 }, // Station & Location
+                        6: { cellWidth: 16 }, // Asset Category
+                        7: { cellWidth: 30 }, // Problem (reduced for SLA columns)
+                        8: { cellWidth: 14 }, // Priority
+                        9: { cellWidth: 16 }, // Status
+                        10: { cellWidth: 14 }, // SLA Response
+                        11: { cellWidth: 14 }, // SLA Solving
+                        12: { cellWidth: 18 }, // WR Doc #
+                        13: { cellWidth: 14 }  // Escalation
                     }
                 })
 

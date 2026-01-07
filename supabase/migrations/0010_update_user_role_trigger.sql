@@ -17,7 +17,7 @@ begin
   user_role := COALESCE(new.raw_user_meta_data->>'role', 'employee');
   
   -- Validate role
-  if user_role not in ('admin', 'manager', 'worker', 'employee') then
+  if user_role not in ('admin', 'manager', 'technician', 'employee') then
     user_role := 'employee';
   end if;
   

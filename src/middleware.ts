@@ -41,7 +41,7 @@ export async function updateSession(request: NextRequest) {
     if (
         !user &&
         !request.nextUrl.pathname.startsWith('/login') &&
-        !request.nextUrl.pathname.startsWith('/register') &&
+        !request.nextUrl.pathname.startsWith('/akun_bro') &&
         !request.nextUrl.pathname.startsWith('/auth') &&
         !request.nextUrl.pathname.startsWith('/admin/setup') &&
         !request.nextUrl.pathname.startsWith('/api')
@@ -50,6 +50,25 @@ export async function updateSession(request: NextRequest) {
         const url = request.nextUrl.clone()
         url.pathname = '/login'
         return NextResponse.redirect(url)
+    }
+
+    // SECURITY: Check if user exists in public.users table
+    // Even if auth.users has the user, they must exist in public.users to access the system
+    if (user && !request.nextUrl.pathname.startsWith('/login') && !request.nextUrl.pathname.startsWith('/akun_bro')) {
+        const { data: publicUser, error } = await supabase
+            .from('users')
+            .select('id')
+            .eq('id', user.id)
+            .single()
+
+        // If user doesn't exist in public.users, sign them out and redirect to login
+        if (error || !publicUser) {
+            await supabase.auth.signOut()
+            const url = request.nextUrl.clone()
+            url.pathname = '/login'
+            url.searchParams.set('error', 'account_deleted')
+            return NextResponse.redirect(url)
+        }
     }
 
     return response

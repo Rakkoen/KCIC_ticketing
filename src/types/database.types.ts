@@ -13,7 +13,7 @@ export interface Database {
                 Row: {
                     id: string
                     email: string
-                    role: 'admin' | 'manager' | 'worker' | 'employee'
+                    role: 'admin' | 'manager' | 'technician' | 'employee'
                     full_name: string | null
                     availability_status: 'online' | 'busy' | 'offline'
                     phone: string | null
@@ -25,7 +25,7 @@ export interface Database {
                 Insert: {
                     id: string
                     email: string
-                    role?: 'admin' | 'manager' | 'worker' | 'employee'
+                    role?: 'admin' | 'manager' | 'technician' | 'employee'
                     full_name?: string | null
                     availability_status?: 'online' | 'busy' | 'offline'
                     phone?: string | null
@@ -37,7 +37,7 @@ export interface Database {
                 Update: {
                     id?: string
                     email?: string
-                    role?: 'admin' | 'manager' | 'worker' | 'employee'
+                    role?: 'admin' | 'manager' | 'technician' | 'employee'
                     full_name?: string | null
                     availability_status?: 'online' | 'busy' | 'offline'
                     phone?: string | null
@@ -63,6 +63,10 @@ export interface Database {
                     comments: string | null
                     created_by: string | null
                     assigned_to: string | null
+                    first_response_at: string | null
+                    resolved_at: string | null
+                    sla_response_status: 'on_time' | 'breached' | 'pending'
+                    sla_solving_status: 'on_time' | 'breached' | 'pending'
                     created_at: string
                     updated_at: string
                 }
@@ -99,6 +103,10 @@ export interface Database {
                     comments?: string | null
                     created_by?: string | null
                     assigned_to?: string | null
+                    first_response_at?: string | null
+                    resolved_at?: string | null
+                    sla_response_status?: 'on_time' | 'breached' | 'pending'
+                    sla_solving_status?: 'on_time' | 'breached' | 'pending'
                     created_at?: string
                     updated_at?: string
                 }
@@ -618,39 +626,70 @@ export interface Database {
             activity_logs: {
                 Row: {
                     id: string
-                    entity_type: 'ticket' | 'incident' | 'user' | 'team' | 'knowledge' | 'project' | 'report' | 'widget'
-                    entity_id: string
-                    action: 'create' | 'update' | 'delete' | 'view' | 'assign' | 'close' | 'reopen' | 'comment' | 'upload'
-                    old_values: Json | null
-                    new_values: Json | null
-                    user_id: string | null
-                    ip_address: string | null
-                    user_agent: string | null
+                    user_id: string
+                    ticket_id: string | null
+                    action: string
+                    target_type: string | null
+                    target_id: string | null
+                    details: Record<string, unknown>
                     created_at: string
                 }
                 Insert: {
                     id?: string
-                    entity_type: 'ticket' | 'incident' | 'user' | 'team' | 'knowledge' | 'project' | 'report' | 'widget'
-                    entity_id: string
-                    action: 'create' | 'update' | 'delete' | 'view' | 'assign' | 'close' | 'reopen' | 'comment' | 'upload'
-                    old_values?: Json | null
-                    new_values?: Json | null
-                    user_id?: string | null
-                    ip_address?: string | null
-                    user_agent?: string | null
+                    user_id: string
+                    ticket_id?: string | null
+                    action: string
+                    target_type?: string | null
+                    target_id?: string | null
+                    details?: Record<string, unknown>
                     created_at?: string
                 }
                 Update: {
                     id?: string
-                    entity_type?: 'ticket' | 'incident' | 'user' | 'team' | 'knowledge' | 'project' | 'report' | 'widget'
-                    entity_id?: string
-                    action?: 'create' | 'update' | 'delete' | 'view' | 'assign' | 'close' | 'reopen' | 'comment' | 'upload'
-                    old_values?: Json | null
-                    new_values?: Json | null
-                    user_id?: string | null
-                    ip_address?: string | null
-                    user_agent?: string | null
+                    user_id?: string
+                    ticket_id?: string | null
+                    action?: string
+                    target_type?: string | null
+                    target_id?: string | null
+                    details?: Record<string, unknown>
                     created_at?: string
+                }
+            }
+            ticket_assignees: {
+                Row: {
+                    id: string
+                    ticket_id: string
+                    user_id: string
+                    assigned_at: string
+                    assigned_by: string | null
+                    is_primary: boolean
+                    work_notes: string | null
+                    completed_at: string | null
+                    created_at: string
+                    updated_at: string
+                }
+                Insert: {
+                    id?: string
+                    ticket_id: string
+                    user_id: string
+                    assigned_at?: string
+                    assigned_by?: string | null
+                    is_primary?: boolean
+                    work_notes?: string | null
+                    completed_at?: string | null
+                    created_at?: string
+                    updated_at?: string
+                }
+                Update: {
+                    id?: string
+                    ticket_id?: string
+                    user_id?: string
+                    assigned_at?: string
+                    assigned_by?: string | null
+                    is_primary?: boolean
+                    work_notes?: string | null
+                    completed_at?: string | null
+                    updated_at?: string
                 }
             }
             kb_categories: {

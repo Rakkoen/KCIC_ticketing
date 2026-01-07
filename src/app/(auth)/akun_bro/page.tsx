@@ -230,7 +230,7 @@ export default function RegisterPage() {
                                 className="block w-full appearance-none rounded-md border border-zinc-300 dark:border-zinc-600 px-3 py-2 placeholder-zinc-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white"
                             >
                                 <option value="employee">Employee</option>
-                                <option value="worker">Worker/IT Support</option>
+                                <option value="technician">Technician/IT Support</option>
                                 <option value="manager">Manager</option>
                                 <option value="admin">Admin</option>
                             </select>

@@ -11,7 +11,7 @@ export async function POST() {
     const testAccounts = [
       { email: 'admin@kcic.com', password: 'admin123', fullName: 'Admin KCIC', role: 'admin' },
       { email: 'manager@kcic.com', password: 'manager123', fullName: 'Manager KCIC', role: 'manager' },
-      { email: 'worker@kcic.com', password: 'worker123', fullName: 'Worker KCIC', role: 'worker' },
+      { email: 'technician@kcic.com', password: 'technician123', fullName: 'Technician KCIC', role: 'technician' },
       { email: 'employee@kcic.com', password: 'employee123', fullName: 'Employee KCIC', role: 'employee' }
     ]
 
@@ -42,7 +42,7 @@ export async function POST() {
             if (existingUser) {
               const { error: updateError } = await supabase
                 .from('users')
-                .update({ 
+                .update({
                   role: account.role,
                   full_name: account.fullName,
                   updated_at: new Date().toISOString()
@@ -65,7 +65,7 @@ export async function POST() {
           if (data.user) {
             const { error: updateError } = await supabase
               .from('users')
-              .update({ 
+              .update({
                 role: account.role,
                 updated_at: new Date().toISOString()
               })
@@ -79,25 +79,25 @@ export async function POST() {
           }
         }
       } catch (err) {
-        results.push({ 
-          email: account.email, 
-          status: 'error', 
-          message: err instanceof Error ? err.message : 'Unknown error' 
+        results.push({
+          email: account.email,
+          status: 'error',
+          message: err instanceof Error ? err.message : 'Unknown error'
         })
       }
     }
 
-    return NextResponse.json({ 
-      success: true, 
+    return NextResponse.json({
+      success: true,
       message: 'Test accounts processed',
-      results 
+      results
     })
 
   } catch (error) {
     console.error('Error creating test users:', error)
-    return NextResponse.json({ 
-      success: false, 
-      message: error instanceof Error ? error.message : 'Failed to create test users' 
+    return NextResponse.json({
+      success: false,
+      message: error instanceof Error ? error.message : 'Failed to create test users'
     }, { status: 500 })
   }
 }

@@ -16,7 +16,7 @@ export async function POST(request: Request) {
     const userRole = role || 'employee'
 
     // Validate role
-    const validRoles = ['admin', 'manager', 'worker', 'employee']
+    const validRoles = ['admin', 'manager', 'technician', 'employee']
     if (!validRoles.includes(userRole)) {
       return NextResponse.json(
         { error: 'Invalid role selected' },

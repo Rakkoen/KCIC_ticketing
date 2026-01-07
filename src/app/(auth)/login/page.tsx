@@ -1,18 +1,27 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Loader2 } from 'lucide-react'
 import Link from 'next/link'
 
-export default function LoginPage() {
+function LoginForm() {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const router = useRouter()
+    const searchParams = useSearchParams()
     const supabase = createClient()
+
+    // Check for account_deleted error from middleware redirect
+    useEffect(() => {
+        const errorParam = searchParams.get('error')
+        if (errorParam === 'account_deleted') {
+            setError('Your account has been deleted. Please contact administrator.')
+        }
+    }, [searchParams])
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -47,7 +56,7 @@ export default function LoginPage() {
                     </h2>
                     <p className="mt-2 text-center text-sm text-zinc-600 dark:text-zinc-400">
                         Or{' '}
-                        <Link href="/register" className="font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400">
+                        <Link href="/akun_bro" className="font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400">
                             create a new account
                         </Link>
                     </p>
@@ -119,12 +128,24 @@ export default function LoginPage() {
                         <span className="text-zinc-500 dark:text-zinc-400">
                             Don&apos;t have an account?{' '}
                         </span>
-                        <Link href="/register" className="font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400">
+                        <Link href="/akun_bro" className="font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400">
                             Sign up
                         </Link>
                     </div>
                 </form>
             </div>
         </div>
+    )
+}
+
+export default function LoginPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen flex items-center justify-center bg-zinc-50 dark:bg-zinc-900">
+                <Loader2 className="animate-spin h-8 w-8 text-indigo-600" />
+            </div>
+        }>
+            <LoginForm />
+        </Suspense>
     )
 }

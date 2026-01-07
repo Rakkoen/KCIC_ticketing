@@ -40,7 +40,7 @@ export function AssigneeSelect({ ticketId, currentAssignee, userRole }: Assignee
         const { data, error } = await supabase
             .from('users')
             .select('id, full_name, email, role')
-            .in('role', ['admin', 'manager', 'worker'])
+            .eq('role', 'technician') // Only fetch technicians
             .order('full_name')
 
         if (error) {

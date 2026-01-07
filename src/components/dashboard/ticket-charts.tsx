@@ -124,35 +124,43 @@ export const TicketCharts = memo(function TicketCharts({ timeRange = '7d' }: Tic
 
     // Optimization: Memoize render content for PieChart to prevent unnecessary re-computations 
     // although Recharts handles its own updates, keeping data stable helps.
-    const renderPieChart = useMemo(() => (
-        <ResponsiveContainer width="100%" height={300}>
-            <PieChart>
-                <Pie
-                    data={statusData}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    label={({ name, percent }) => `${name} ${(percent ? percent * 100 : 0).toFixed(0)}%`}
-                    outerRadius={80}
-                    fill="#8884d8"
-                    dataKey="value"
-                >
-                    {statusData.map((entry, index) => (
-                        <Cell
-                            key={`cell-${index}`}
-                            fill={
-                                entry.name === 'New' ? COLORS.blue :
-                                    entry.name === 'In progress' ? COLORS.yellow :
-                                        entry.name === 'Resolved' ? COLORS.green :
-                                            COLORS.gray
-                            }
-                        />
-                    ))}
-                </Pie>
-                <Tooltip />
-            </PieChart>
-        </ResponsiveContainer>
-    ), [statusData]) // Only re-render when statusData changes
+    const renderPieChart = useMemo(() => {
+        // Dynamic status color mapping
+        const getStatusColor = (statusName: string) => {
+            const normalizedStatus = statusName.toLowerCase()
+            if (normalizedStatus.includes('open')) return COLORS.blue
+            if (normalizedStatus.includes('progress')) return COLORS.yellow
+            if (normalizedStatus.includes('escalation')) return COLORS.red
+            if (normalizedStatus.includes('resolved')) return COLORS.green
+            if (normalizedStatus.includes('closed')) return COLORS.gray
+            return COLORS.purple // Default for any other status
+        }
+
+        return (
+            <ResponsiveContainer width="100%" height={300}>
+                <PieChart>
+                    <Pie
+                        data={statusData}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={false}
+                        label={({ name, percent }) => `${name} ${(percent ? percent * 100 : 0).toFixed(0)}%`}
+                        outerRadius={80}
+                        fill="#8884d8"
+                        dataKey="value"
+                    >
+                        {statusData.map((entry, index) => (
+                            <Cell
+                                key={`cell-${index}`}
+                                fill={getStatusColor(entry.name)}
+                            />
+                        ))}
+                    </Pie>
+                    <Tooltip />
+                </PieChart>
+            </ResponsiveContainer>
+        )
+    }, [statusData]) // Only re-render when statusData changes
 
     if (loading) {
         return (

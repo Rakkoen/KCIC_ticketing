@@ -30,11 +30,11 @@ export default function AdminSetupPage() {
             if (data.success) {
                 setIsSuccess(true)
                 setMessage('Test accounts created successfully! You can now use these accounts to login:\n\n' +
-                         'Admin: admin@kcic.com / admin123\n' +
-                         'Manager: manager@kcic.com / manager123\n' +
-                         'Worker: worker@kcic.com / worker123\n' +
-                         'Employee: employee@kcic.com / employee123\n\n' +
-                         'Results:\n' + data.results.map((r: any) => `${r.email}: ${r.status} (${r.role || r.message || ''})`).join('\n'))
+                    'Admin: admin@kcic.com / admin123\n' +
+                    'Manager: manager@kcic.com / manager123\n' +
+                    'Technician: technician@kcic.com / technician123\n' +
+                    'Employee: employee@kcic.com / employee123\n\n' +
+                    'Results:\n' + data.results.map((r: any) => `${r.email}: ${r.status} (${r.role || r.message || ''})`).join('\n'))
             } else {
                 setIsSuccess(false)
                 setMessage(data.message || 'Failed to create test accounts')
@@ -75,8 +75,8 @@ export default function AdminSetupPage() {
                                 <span className="text-zinc-600 dark:text-zinc-400">manager@kcic.com / manager123</span>
                             </div>
                             <div className="flex justify-between">
-                                <span className="font-medium text-zinc-700 dark:text-zinc-300">Worker:</span>
-                                <span className="text-zinc-600 dark:text-zinc-400">worker@kcic.com / worker123</span>
+                                <span className="font-medium text-zinc-700 dark:text-zinc-300">Technician:</span>
+                                <span className="text-zinc-600 dark:text-zinc-400">technician@kcic.com / technician123</span>
                             </div>
                             <div className="flex justify-between">
                                 <span className="font-medium text-zinc-700 dark:text-zinc-300">Employee:</span>

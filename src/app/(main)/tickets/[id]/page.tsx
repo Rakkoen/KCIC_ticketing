@@ -3,22 +3,26 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { notFound } from 'next/navigation'
+import { notFound, useRouter } from 'next/navigation'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { StatusSelect } from '@/components/tickets/status-select'
 import { AssigneeSelect } from '@/components/tickets/assignee-select'
 import { TicketProgressBar } from '@/components/tickets/ticket-progress-bar'
 import { TicketComments } from '@/components/tickets/ticket-comments'
 import { useUserRole } from '@/hooks/use-user-role'
 import Link from 'next/link'
-import { ArrowLeft, User as UserIcon, Calendar, AlertTriangle, MapPin } from 'lucide-react'
+import { ArrowLeft, User as UserIcon, Calendar, AlertTriangle, MapPin, Activity } from 'lucide-react'
+import { getActivityMessage } from '@/lib/activity-helper'
 
 export default function TicketDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const [ticket, setTicket] = useState<any>(null)
     const [loading, setLoading] = useState(true)
     const [currentUserId, setCurrentUserId] = useState<string | null>(null)
+    const [activities, setActivities] = useState<any[]>([])
     const { userRole, loading: roleLoading } = useUserRole()
     const supabase = createClient()
+    const router = useRouter()
 
     useEffect(() => {
         const fetchTicket = async () => {
@@ -30,23 +34,47 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
                 setCurrentUserId(user.id)
             }
 
+
             const { data: ticketData, error } = await supabase
                 .from('tickets')
-                .select('*, created_by_user:users!created_by(*), assigned_to_user:users!assigned_to(*)')
+                .select(`
+                    *, 
+                    created_by_user:users!tickets_created_by_fkey(id, full_name, email), 
+                    assigned_to_user:users!tickets_assigned_to_fkey(id, full_name, email)
+                `)
                 .eq('id', id)
                 .single()
 
             if (error || !ticketData) {
+                console.error('Ticket fetch error:', error)
+                setLoading(false)
                 notFound()
                 return
             }
 
             setTicket(ticketData)
             setLoading(false)
+
+            // Fetch activity logs
+            const { data: activityData } = await supabase
+                .from('activity_logs')
+                .select(`
+                    *,
+                    user:user_id (
+                        full_name,
+                        email
+                    )
+                `)
+                .eq('ticket_id', id)
+                .order('created_at', { ascending: false })
+                .limit(10)
+
+            setActivities(activityData || [])
         }
 
         fetchTicket()
-    }, [params])
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [params]) // Only depend on params, not supabase
 
     if (loading || roleLoading) {
         return (
@@ -122,8 +150,8 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
                             userRole={(userRole as any) || 'employee'}
                         />
 
-                        <div>
-                            <h3 className="text-sm font-medium text-zinc-500 dark:text-zinc-400 mb-2">Details</h3>
+                        <div className="pt-4 border-t border-zinc-200 dark:border-zinc-700">
+                            <h3 className="text-sm font-medium text-zinc-500 dark:text-zinc-400 mb-3">Details</h3>
                             <dl className="space-y-3 text-sm">
                                 <div className="flex justify-between">
                                     <dt className="text-zinc-500 dark:text-zinc-400 flex items-center">
@@ -153,6 +181,46 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
                                     </dd>
                                 </div>
                             </dl>
+                        </div>
+
+                        {/* Recent Activities */}
+                        <div className="pt-4 border-t border-zinc-200 dark:border-zinc-700">
+                            <div className="flex items-center gap-2 mb-3">
+                                <Activity className="h-4 w-4 text-zinc-600 dark:text-zinc-400" />
+                                <h3 className="text-sm font-medium text-zinc-500 dark:text-zinc-400">Recent Activities</h3>
+                            </div>
+
+                            {activities.length > 0 ? (
+                                <div className="space-y-2 max-h-96 overflow-y-auto">
+                                    {activities.map((activity) => (
+                                        <div
+                                            key={activity.id}
+                                            className="p-2 rounded bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-700"
+                                        >
+                                            <div className="flex items-start justify-between gap-2 mb-1">
+                                                <p className="text-xs font-medium text-zinc-900 dark:text-white">
+                                                    {activity.user?.full_name || 'System'}
+                                                </p>
+                                                <time className="text-xs text-zinc-500 dark:text-zinc-400 flex-shrink-0">
+                                                    {new Date(activity.created_at).toLocaleString('id-ID', {
+                                                        day: '2-digit',
+                                                        month: 'short',
+                                                        hour: '2-digit',
+                                                        minute: '2-digit'
+                                                    })}
+                                                </time>
+                                            </div>
+                                            <p className="text-xs text-zinc-600 dark:text-zinc-400">
+                                                {getActivityMessage(activity)}
+                                            </p>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <p className="text-xs text-zinc-500 dark:text-zinc-400 text-center py-4">
+                                    No activities yet
+                                </p>
+                            )}
                         </div>
                     </div>
                 </div>
