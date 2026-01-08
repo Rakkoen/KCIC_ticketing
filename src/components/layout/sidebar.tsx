@@ -3,29 +3,23 @@
 import React from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { FileText, BarChart2, Settings, LogOut, Home, Clock, FileBarChart, Users } from 'lucide-react'
+import { LogOut } from 'lucide-react'
 import { User } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { NotificationDropdown } from '@/components/notifications/notification-system'
 import { useUserRole } from '@/hooks/use-user-role'
-
-const navigation = [
-    { name: 'Dashboard', href: '/', icon: Home },
-    { name: 'Tickets', href: '/tickets', icon: FileText },
-    { name: 'Workers', href: '/workers', icon: Users },
-    { name: 'Analytics', href: '/analytics', icon: BarChart2 },
-    { name: 'Reports', href: '/reports', icon: FileBarChart },
-    { name: 'SLA Policies', href: '/sla-policies', icon: Clock },
-    { name: 'Settings', href: '/settings', icon: Settings },
-]
+import { getAccessibleNavigation } from '@/lib/navigation-access'
 
 export default function Sidebar({ user }: { user: User }) {
     const pathname = usePathname()
     const router = useRouter()
     const supabase = createClient()
     const { userRole } = useUserRole()
+
+    // Get navigation items based on user role
+    const navigation = getAccessibleNavigation(userRole)
 
     const handleSignOut = async () => {
         await supabase.auth.signOut()

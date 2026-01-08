@@ -4,8 +4,17 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Bell, Palette, Layout, Save, Loader2 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import { RouteProtection } from '@/components/route-protection'
 
 export default function SettingsPage() {
+    return (
+        <RouteProtection route="/settings">
+            <SettingsPageContent />
+        </RouteProtection>
+    )
+}
+
+function SettingsPageContent() {
     const [loading, setLoading] = useState(true)
     const [saving, setSaving] = useState(false)
     const [preferences, setPreferences] = useState({

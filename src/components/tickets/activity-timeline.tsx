@@ -190,10 +190,10 @@ export function ActivityTimeline({ ticketId }: ActivityTimelineProps) {
 
                                         {log.action === ACTIVITY_ACTIONS.ATTACHMENT_UPLOAD && (
                                             <div className="text-zinc-600 dark:text-zinc-400">
-                                                📎 {log.details.file_name as string}
+                                                📎 {String(log.details.file_name || '')}
                                                 {log.details.file_size && (
                                                     <span className="ml-2 text-zinc-500">
-                                                        ({Math.round((log.details.file_size as number) / 1024)} KB)
+                                                        ({Math.round(Number(log.details.file_size) / 1024)} KB)
                                                     </span>
                                                 )}
                                             </div>
@@ -201,7 +201,7 @@ export function ActivityTimeline({ ticketId }: ActivityTimelineProps) {
 
                                         {log.action === ACTIVITY_ACTIONS.COMMENT_ADD && log.details.comment_preview && (
                                             <div className="text-zinc-600 dark:text-zinc-400 italic">
-                                                "{log.details.comment_preview as string}..."
+                                                "{String(log.details.comment_preview)}..."
                                             </div>
                                         )}
                                     </div>

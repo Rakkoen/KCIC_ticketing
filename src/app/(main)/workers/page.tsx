@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Users, CheckCircle2, Clock, AlertCircle, TrendingUp } from 'lucide-react'
 import Link from 'next/link'
+import { RouteProtection } from '@/components/route-protection'
 
 interface Technician {
     id: string
@@ -33,6 +34,14 @@ interface TechnicianStats {
 }
 
 export default function WorkersPage() {
+    return (
+        <RouteProtection route="/workers">
+            <WorkersPageContent />
+        </RouteProtection>
+    )
+}
+
+function WorkersPageContent() {
     const [technicians, setTechnicians] = useState<TechnicianStats[]>([])
     const [loading, setLoading] = useState(true)
     const supabase = createClient()
@@ -56,7 +65,15 @@ export default function WorkersPage() {
             const stats = await Promise.all(
                 (technicianData || []).map(async (tech) => {
                     // Get all tickets assigned to this technician
-                    const { data: tickets } = await supabase
+                    const { data: tickets }: {
+                        data: Array<{
+                            id: string
+                            custom_id: string | null
+                            title: string
+                            status: string
+                            created_at: string
+                        }> | null
+                    } = await supabase
                         .from('tickets')
                         .select('id, custom_id, title, status, created_at')
                         .eq('assigned_to', tech.id)

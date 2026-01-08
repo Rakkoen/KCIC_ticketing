@@ -95,7 +95,9 @@ export function KanbanBoard({ filters }: KanbanBoardProps) {
         try {
             const { error } = await supabase
                 .from('tickets')
-                .update({ status: newStatus as any })
+                .update({
+                    status: newStatus
+                } as { status: string })
                 .eq('id', ticketId)
 
             if (error) throw error

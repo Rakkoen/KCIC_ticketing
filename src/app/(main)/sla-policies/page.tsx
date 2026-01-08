@@ -5,10 +5,19 @@ import { createClient } from '@/lib/supabase/client'
 import { Database } from '@/types/database.types'
 import { Clock, Save, Plus, Trash2 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import { RouteProtection } from '@/components/route-protection'
 
 type SLAPolicy = Database['public']['Tables']['sla_policies']['Row']
 
 export default function SLAPoliciesPage() {
+    return (
+        <RouteProtection route="/sla-policies">
+            <SLAPoliciesPageContent />
+        </RouteProtection>
+    )
+}
+
+function SLAPoliciesPageContent() {
     const [policies, setPolicies] = useState<SLAPolicy[]>([])
     const [loading, setLoading] = useState(true)
     const [editing, setEditing] = useState<string | null>(null)
@@ -178,8 +187,8 @@ export default function SLAPoliciesPage() {
                                     <button
                                         onClick={() => handleToggleActive(policy.id, policy.is_active)}
                                         className={`px-3 py-1 rounded text-xs font-medium ${policy.is_active
-                                                ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
-                                                : 'bg-zinc-100 text-zinc-600 dark:bg-zinc-700 dark:text-zinc-400'
+                                            ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
+                                            : 'bg-zinc-100 text-zinc-600 dark:bg-zinc-700 dark:text-zinc-400'
                                             }`}
                                     >
                                         {policy.is_active ? 'Active' : 'Inactive'}

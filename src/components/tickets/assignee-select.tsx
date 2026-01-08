@@ -8,14 +8,14 @@ import { Loader2, User as UserIcon } from 'lucide-react'
 interface AssigneeSelectProps {
     ticketId: string
     currentAssignee: string | null
-    userRole: 'admin' | 'manager' | 'worker' | 'employee'
+    userRole: 'admin' | 'manager' | 'technician' | 'employee'
 }
 
 interface User {
     id: string
     full_name: string | null
     email: string
-    role: 'admin' | 'manager' | 'worker' | 'employee'
+    role: 'admin' | 'manager' | 'technician' | 'employee'
 }
 
 export function AssigneeSelect({ ticketId, currentAssignee, userRole }: AssigneeSelectProps) {
@@ -58,7 +58,9 @@ export function AssigneeSelect({ ticketId, currentAssignee, userRole }: Assignee
         try {
             const { error } = await supabase
                 .from('tickets')
-                .update({ assigned_to: newAssigneeId || null })
+                .update({
+                    assigned_to: newAssigneeId || null
+                } as { assigned_to: string | null })
                 .eq('id', ticketId)
 
             if (error) throw error

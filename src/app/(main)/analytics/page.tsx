@@ -6,10 +6,19 @@ import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, Cart
 import { Calendar, TrendingUp, Users, Ticket, Clock, CheckCircle } from 'lucide-react'
 import { format, subDays, startOfDay, endOfDay } from 'date-fns'
 import { Database } from '@/types/database.types'
+import { RouteProtection } from '@/components/route-protection'
 
 type Ticket = Database['public']['Tables']['tickets']['Row']
 
 export default function AnalyticsPage() {
+    return (
+        <RouteProtection route="/analytics">
+            <AnalyticsPageContent />
+        </RouteProtection>
+    )
+}
+
+function AnalyticsPageContent() {
     const [dateRange, setDateRange] = useState('7d')
     const [loading, setLoading] = useState(true)
     const [stats, setStats] = useState({

@@ -42,7 +42,9 @@ export function StatusSelect({ ticketId, currentStatus }: StatusSelectProps) {
             console.log('Attempting update...')
             const { error, data } = await supabase
                 .from('tickets')
-                .update({ status: newStatus })
+                .update({
+                    status: newStatus
+                } as { status: string })
                 .eq('id', ticketId)
                 .select()
 

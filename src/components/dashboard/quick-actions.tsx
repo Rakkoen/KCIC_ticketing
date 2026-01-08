@@ -13,7 +13,7 @@ import {
 } from 'lucide-react'
 
 interface QuickActionsProps {
-    userRole?: 'admin' | 'manager' | 'worker' | 'employee'
+    userRole?: 'admin' | 'manager' | 'technician' | 'employee'
 }
 
 export function QuickActions({ userRole = 'employee' }: QuickActionsProps) {

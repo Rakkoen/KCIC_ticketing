@@ -806,6 +806,70 @@ export interface Database {
                     updated_at?: string
                 }
             }
+            ticket_comments: {
+                Row: {
+                    id: string
+                    ticket_id: string
+                    user_id: string
+                    content: string
+                    created_at: string
+                    updated_at: string
+                }
+                Insert: {
+                    id?: string
+                    ticket_id: string
+                    user_id: string
+                    content: string
+                    created_at?: string
+                    updated_at?: string
+                }
+                Update: {
+                    id?: string
+                    ticket_id?: string
+                    user_id?: string
+                    content?: string
+                    created_at?: string
+                    updated_at?: string
+                }
+            }
+            user_preferences: {
+                Row: {
+                    id: string
+                    user_id: string
+                    theme: string
+                    email_notifications: boolean
+                    desktop_notifications: boolean
+                    notification_frequency: string
+                    default_view: string
+                    items_per_page: number
+                    created_at: string
+                    updated_at: string
+                }
+                Insert: {
+                    id?: string
+                    user_id: string
+                    theme?: string
+                    email_notifications?: boolean
+                    desktop_notifications?: boolean
+                    notification_frequency?: string
+                    default_view?: string
+                    items_per_page?: number
+                    created_at?: string
+                    updated_at?: string
+                }
+                Update: {
+                    id?: string
+                    user_id?: string
+                    theme?: string
+                    email_notifications?: boolean
+                    desktop_notifications?: boolean
+                    notification_frequency?: string
+                    default_view?: string
+                    items_per_page?: number
+                    created_at?: string
+                    updated_at?: string
+                }
+            }
         }
         Views: {
             [_: string]: never
@@ -867,7 +931,7 @@ export interface Database {
             }
         }
         Enums: {
-            user_role: 'admin' | 'manager' | 'worker' | 'employee'
+            user_role: 'admin' | 'manager' | 'technician' | 'employee'
         }
     }
 }

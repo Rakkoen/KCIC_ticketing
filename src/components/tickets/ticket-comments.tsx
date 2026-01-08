@@ -62,7 +62,7 @@ export function TicketComments({ ticketId }: TicketCommentsProps) {
                 ticket_id: ticketId,
                 user_id: user.id,
                 content: newComment.trim()
-            })
+            } as { ticket_id: string; user_id: string; content: string })
 
         if (!error) {
             setNewComment('')

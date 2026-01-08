@@ -4,7 +4,7 @@ import { NextResponse } from 'next/server'
 
 export async function POST() {
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
     const adminSupabase = createAdminClient()
 
     // Test accounts data
@@ -43,7 +43,7 @@ export async function POST() {
               const { error: updateError } = await supabase
                 .from('users')
                 .update({
-                  role: account.role,
+                  role: account.role as 'admin' | 'manager' | 'technician' | 'employee',
                   full_name: account.fullName,
                   updated_at: new Date().toISOString()
                 })
@@ -66,7 +66,7 @@ export async function POST() {
             const { error: updateError } = await supabase
               .from('users')
               .update({
-                role: account.role,
+                role: account.role as 'admin' | 'manager' | 'technician' | 'employee',
                 updated_at: new Date().toISOString()
               })
               .eq('id', data.user.id)

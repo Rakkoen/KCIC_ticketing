@@ -6,8 +6,17 @@ import { TicketFilters, TicketFilters as TicketFiltersType } from '@/components/
 import { Calendar, Download, FileText, Loader2 } from 'lucide-react'
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
+import { RouteProtection } from '@/components/route-protection'
 
 export default function TicketReportPage() {
+    return (
+        <RouteProtection route="/reports">
+            <TicketReportPageContent />
+        </RouteProtection>
+    )
+}
+
+function TicketReportPageContent() {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [tickets, setTickets] = useState<any[]>([])
     const [loading, setLoading] = useState(false)
