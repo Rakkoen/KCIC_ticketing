@@ -181,8 +181,8 @@ function TicketReportPageContent() {
                 // 7. Asset Category (Equipment)
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 (ticket as any).equipment_category || 'N/A',
-                // 8. Problem Description (truncated)
-                ticket.description.length > 40 ? ticket.description.substring(0, 40) + '...' : ticket.description,
+                // 8. Problem Description (full text with wrapping)
+                ticket.description,
                 // 9. Priority
                 ticket.priority.toUpperCase(),
                 // 10. Status
@@ -215,7 +215,8 @@ function TicketReportPageContent() {
                 startY: filterY + 6,
                 styles: {
                     fontSize: 7,
-                    cellPadding: 2
+                    cellPadding: 2,
+                    overflow: 'linebreak' // Enable text wrapping
                 },
                 headStyles: {
                     fillColor: [79, 70, 229],
@@ -224,18 +225,18 @@ function TicketReportPageContent() {
                 },
                 alternateRowStyles: { fillColor: [245, 245, 245] },
                 columnStyles: {
-                    0: { cellWidth: 25 }, // Timestamp
-                    1: { cellWidth: 20 }, // Ticket #
+                    0: { cellWidth: 22 }, // Timestamp
+                    1: { cellWidth: 18 }, // Ticket #
                     2: { cellWidth: 18 }, // Report Date
                     3: { cellWidth: 20 }, // Reporter
                     4: { cellWidth: 20 }, // Receiver
-                    5: { cellWidth: 25 }, // Station & Location
-                    6: { cellWidth: 18 }, // Asset Category
-                    7: { cellWidth: 35 }, // Problem
-                    8: { cellWidth: 16 }, // Priority
-                    9: { cellWidth: 18 }, // Status
-                    10: { cellWidth: 22 }, // WR Doc #
-                    11: { cellWidth: 18 }  // Escalation
+                    5: { cellWidth: 22 }, // Station & Location
+                    6: { cellWidth: 16 }, // Asset Category
+                    7: { cellWidth: 'auto', overflow: 'linebreak' }, // Problem - auto width with wrapping
+                    8: { cellWidth: 14 }, // Priority
+                    9: { cellWidth: 16 }, // Status
+                    10: { cellWidth: 20 }, // WR Doc #
+                    11: { cellWidth: 16 }  // Escalation
                 }
             })
 

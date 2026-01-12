@@ -147,11 +147,12 @@ function UsersPageContent() {
 
         setSubmitting(true)
         try {
-            // Step 1: Sign up user with Supabase Auth
+            // Step 1: Sign up user with Supabase Auth (skip email confirmation)
             const { data: authData, error: authError } = await supabase.auth.signUp({
                 email: formData.email,
                 password: formData.password,
                 options: {
+                    emailRedirectTo: undefined, // Skip email confirmation
                     data: {
                         full_name: formData.full_name,
                         role: formData.role,
